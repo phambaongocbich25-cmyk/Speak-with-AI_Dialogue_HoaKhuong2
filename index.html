@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English 5 Speaking – Hoa Khuong 2</title>
+
+<style>
+body{
+  font-family:"Comic Sans MS",Arial,sans-serif;
+  background:linear-gradient(135deg,#dbeeff,#ffffff);
+  margin:0;padding:12px
+}
+.container{
+  max-width:920px;margin:auto;
+  background:#fff;padding:18px;
+  border-radius:22px;
+  box-shadow:0 10px 25px rgba(0,0,0,.18)
+}
+h1,h2{text-align:center;color:#0d47a1}
+.card{
+  background:#f5fbff;
+  padding:14px;margin-top:14px;
+  border-radius:16px;
+  border:2px dashed #bbdefb
+}
+input,select,textarea{
+  width:100%;padding:10px;
+  border-radius:12px;
+  border:2px solid #bbdefb;
+  margin-top:6px;
+  font-size:15px
+}
+button{
+  width:100%;padding:12px;
+  margin-top:10px;
+  background:#1565c0;
+  color:white;
+  border:none;
+  border-radius:22px;
+  font-size:16px
+}
+button.small{width:auto;padding:6px 10px;font-size:14px}
+.unit-title{
+  background:#ffeb3b;
+  padding:8px;
+  border-radius:14px;
+  text-align:center;
+  font-weight:bold;
+  margin-bottom:6px
+}
+.word-box span{
+  display:inline-block;
+  background:#ffe0e0;
+  padding:4px 8px;
+  margin:4px;
+  border-radius:8px
+}
+.star{font-size:26px;text-align:center}
+.certificate{
+  display:none;margin-top:22px;
+  padding:26px;border-radius:22px;
+  background:#fff;
+  border:6px double #fbc02d;
+  text-align:center
+}
+.school{font-size:22px;font-weight:bold}
+.cert-title{font-size:26px;color:#1565c0;margin:10px 0}
+.cert-name{font-size:24px;font-weight:bold}
+.sign{
+  display:flex;justify-content:space-between;
+  margin-top:28px;font-size:14px
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>🎤 English 5 Speaking</h1>
+<h2>Hoa Khuong 2 Primary School</h2>
+
+<div class="card">
+  <input id="studentName" placeholder="Student name">
+  <input id="studentClass" placeholder="Class (5/1)">
+</div>
+
+<div class="card">
+  <select id="mode" onchange="switchMode()">
+    <option value="unit">Speaking by Unit</option>
+    <option value="free">Free Speaking</option>
+  </select>
+</div>
+
+<div class="card" id="unitBox">
+  <select id="unit"></select>
+  <div class="unit-title" id="unitTitle"></div>
+
+  <p><b>👂 AI Sample (Kids UK):</b></p>
+  <p id="sampleText"></p>
+
+  <button onclick="playSample()">▶ Listen sample</button>
+  <button onclick="aiAsk()">🤖 AI asks a question</button>
+</div>
+
+<div class="card">
+  <textarea id="studentText" rows="3"
+  placeholder="Press the microphone and speak..."></textarea>
+  <button onclick="startSpeak()">🎙 Start speaking</button>
+</div>
+
+<div class="card">
+  <h3>🤖 AI Feedback</h3>
+  <div id="feedback"></div>
+  <div class="word-box" id="wrongWords"></div>
+</div>
+
+<div class="certificate" id="certificate">
+  <div class="school">HOA KHUONG 2 PRIMARY SCHOOL</div>
+  <div class="cert-title">CERTIFICATE OF ENGLISH SPEAKING</div>
+  <p>This certificate is proudly presented to</p>
+  <div class="cert-name" id="cName"></div>
+  <p id="cClass"></p>
+  <p id="cUnit"></p>
+  <div class="star" id="cStar"></div>
+  <p>🌟 Keep practising English every day!</p>
+  <div class="sign">
+    <div><b>Principal</b><br>Tran Thi Kim Yen</div>
+    <div><b>Teacher</b><br>Pham Thi Ngoc Bich</div>
+  </div>
+</div>
+
+</div>
+
+<audio id="clap" src="https://www.soundjay.com/human/applause-8.mp3"></audio>
+
+<script>
+// === UNIT DATA (GIỮ NGUYÊN TÊN UNIT CỦA CÔ) ===
+const units={
+1:["Unit 1: All about me","My name is Minh. I am in Class 5A. I live in the countryside. I like swimming."],
+2:["Unit 2: Our homes","I live in a house. It is small but nice. My house is in the village."],
+3:["Unit 3: My foreign friends","My friend is from Australia. He is friendly and helpful."],
+4:["Unit 4: Our free-time activities","In my free time, I go for a walk and play the violin."],
+5:["Unit 5: My future job","I would like to be a teacher because I like teaching children."],
+6:["Unit 6: Our school rooms","The computer room is on the second floor. Go upstairs and turn right."],
+7:["Unit 7: Our favourite school activities","I like doing projects because it is interesting."],
+8:["Unit 8: In our classroom","The board is in front of the class. The clock is above the door."],
+9:["Unit 9: Our outdoor activities","Yesterday, we went camping and danced around the campfire."],
+10:["Unit 10: Our school trip","We visited Ba Na Hills and took many photos."],
+11:["Unit 11: Family time","Last weekend, my family went to the beach together."],
+12:["Unit 12: Our Tet holiday","At Tet, we decorate the house and visit our relatives."],
+13:["Unit 13: Our special days","On Children's Day, we have fun and get lovely gifts."],
+14:["Unit 14: Staying healthy","I eat healthy food and exercise three times a week."],
+15:["Unit 15: Our health","I have a sore throat. I should drink warm water."],
+16:["Unit 16: Seasons and weather","It is cloudy in autumn and cold in winter."],
+17:["Unit 17: Stories for children","The story is about a clever fox and a hard-working crow."],
+18:["Unit 18: Means of transport","I can get there by bus or by bike."],
+19:["Unit 19: Places of interest","Hoi An Ancient Town is beautiful and peaceful."],
+20:["Unit 20: Our summer holidays","This summer, I am going to visit Phu Quoc Island."]
+};
+
+const questions={
+1:["What's your name?","Where do you live?","What do you like doing?"],
+2:["Where do you live?","Is your house big or small?"],
+3:["Where is your friend from?","What is he like?"],
+4:["What do you do in your free time?"],
+5:["What would you like to be in the future? Why?"],
+6:["Where is the computer room?"],
+7:["What is your favourite school activity? Why?"],
+8:["Where is the board?"],
+9:["What did you do yesterday?"],
+10:["Where did you go on your school trip?"],
+11:["What did your family do last weekend?"],
+12:["What do you do at Tet?"],
+13:["What do you do on Children's Day?"],
+14:["What do you do to stay healthy?"],
+15:["What's the matter with you?"],
+16:["What's the weather like today?"],
+17:["Who are the characters in the story?"],
+18:["How can you get there?"],
+19:["Which place would you like to visit?"],
+20:["What are you going to do this summer?"]
+};
+
+const unitSel=document.getElementById("unit");
+for(let i=1;i<=20;i++) unitSel.innerHTML+=`<option value="${i}">Unit ${i}</option>`;
+unitSel.onchange=updateUnit;
+updateUnit();
+
+function updateUnit(){
+  unitTitle.innerText=units[unitSel.value][0];
+  sampleText.innerText=units[unitSel.value][1];
+  qIndex=0;
+}
+
+function switchMode(){
+  document.getElementById("unitBox").style.display=
+    mode.value==="unit"?"block":"none";
+}
+
+function speak(text){
+  let u=new SpeechSynthesisUtterance(text);
+  u.lang="en-GB";
+  u.rate=0.85;
+  u.pitch=1.2;
+  speechSynthesis.speak(u);
+}
+
+function playSample(){ speak(sampleText.innerText); }
+
+let qIndex=0;
+function aiAsk(){
+  let q=questions[unitSel.value][qIndex];
+  speak(q);
+  qIndex=(qIndex+1)%questions[unitSel.value].length;
+}
+
+const recog=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+recog.lang="en-GB";
+
+function startSpeak(){recog.start();}
+
+recog.onresult=e=>{
+  let said=e.results[0][0].transcript.toLowerCase();
+  studentText.value=said;
+  checkSpeech(said);
+};
+
+function checkSpeech(said){
+  let model=sampleText.innerText.toLowerCase();
+  let miss=model.split(" ").filter(w=>!said.includes(w));
+  wrongWords.innerHTML="";
+  if(miss.length){
+    feedback.innerHTML="❌ Please practise these words again:";
+    miss.forEach(w=>{
+      let s=document.createElement("span");
+      s.innerHTML=w+` <button class="small" onclick="speak('${w}')">🔊</button>`;
+      wrongWords.appendChild(s);
+    });
+  }else{
+    feedback.innerHTML="✅ Excellent! Very good pronunciation!";
+  }
+  clap.play();
+  showCert(miss.length>6?2:miss.length>3?3:4);
+}
+
+function showCert(star){
+  certificate.style.display="block";
+  cName.innerText=studentName.value;
+  cClass.innerText="Class: "+studentClass.value;
+  cUnit.innerText=units[unitSel.value][0];
+  cStar.innerText="⭐".repeat(star);
+}
+</script>
+</body>
+</html>
